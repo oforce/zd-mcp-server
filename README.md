@@ -73,6 +73,7 @@ The MCP Zendesk integration provides the following functions:
 5. `zendesk_update_ticket` - Updates ticket properties
 6. `zendesk_add_private_note` - Adds an internal note to a ticket
 7. `zendesk_add_public_note` - Adds a public comment to a ticket
+8. `zendesk_get_linked_incidents` - Retrieves all incident tickets linked to a particular ticket
 
 ## Authentication Setup
 

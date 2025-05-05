@@ -342,4 +342,41 @@ export function zenDeskTools(server: McpServer) {
       }
     }
   );
+
+  server.tool(
+    "zendesk_get_linked_incidents",
+    "Fetch all incident tickets linked to a particular ticket",
+    {
+      ticket_id: z.string().describe("The ID of the ticket to retrieve linked incidents for"),
+    },
+    async ({ ticket_id }) => {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          (client as any).tickets.listIncidents(parseInt(ticket_id, 10), (error: Error | undefined, req: any, result: any) => {
+            if (error) {
+              console.log(error);
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          });
+        });
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(result, null, 2)
+          }]
+        };
+      } catch (error: any) {
+        return {
+          content: [{
+            type: "text",
+            text: `Error: ${error.message || 'Unknown error occurred'}`
+          }],
+          isError: true
+        };
+      }
+    }
+  );
 }

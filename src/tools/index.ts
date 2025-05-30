@@ -3,6 +3,80 @@ import zendesk from "node-zendesk";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+// Types for exported functions
+export interface ZendeskConfig {
+  email: string;
+  token: string;
+  subdomain: string;
+}
+
+// Create Zendesk client
+export function createZendeskClient(config: ZendeskConfig) {
+  return zendesk.createClient({
+    username: config.email,
+    token: config.token,
+    remoteUri: `https://${config.subdomain}.zendesk.com/api/v2`,
+  });
+}
+
+// Exported read-only tool functions
+export async function getTicket(client: any, ticketId: number): Promise<any> {
+  return new Promise((resolve, reject) => {
+    client.tickets.show(ticketId, (error: Error | undefined, req: any, result: any) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+export async function searchTickets(client: any, query: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    client.search.query(query, (error: Error | undefined, req: any, result: any) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+export async function getTicketDetails(client: any, ticketId: number): Promise<any> {
+  const ticketResult = await getTicket(client, ticketId);
+  
+  const commentsResult = await new Promise((resolve, reject) => {
+    client.tickets.getComments(ticketId, (error: Error | undefined, req: any, result: any) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+
+  return {
+    ticket: ticketResult,
+    comments: commentsResult
+  };
+}
+
+export async function getLinkedIncidents(client: any, ticketId: number): Promise<any> {
+  return new Promise((resolve, reject) => {
+    client.tickets.listIncidents(ticketId, (error: Error | undefined, req: any, result: any) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
+// Environment-based client for backward compatibility
+
 if (!process.env.ZENDESK_EMAIL || !process.env.ZENDESK_TOKEN || !process.env.ZENDESK_SUBDOMAIN) {
   throw new Error('Missing required environment variables: ZENDESK_EMAIL, ZENDESK_TOKEN, ZENDESK_SUBDOMAIN');
 }
@@ -22,16 +96,7 @@ export function zenDeskTools(server: McpServer) {
     },
     async ({ ticket_id }) => {
       try {
-        const result = await new Promise((resolve, reject) => {
-          client.tickets.show(parseInt(ticket_id, 10), (error: Error | undefined, req: any, result: any) => {
-            if (error) {
-              console.log(error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-        });
+        const result = await getTicket(client, parseInt(ticket_id, 10));
 
         return {
           content: [{
@@ -258,16 +323,7 @@ export function zenDeskTools(server: McpServer) {
     },
     async ({ query }) => {
       try {
-        const result = await new Promise((resolve, reject) => {
-          (client as any).search.query(query, (error: Error | undefined, req: any, result: any) => {
-            if (error) {
-              console.log(error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-        });
+        const result = await searchTickets(client, query);
 
         return {
           content: [{
@@ -295,40 +351,12 @@ export function zenDeskTools(server: McpServer) {
     },
     async ({ ticket_id }) => {
       try {
-        // Get the ticket
-        const ticketResult = await new Promise((resolve, reject) => {
-          client.tickets.show(parseInt(ticket_id, 10), (error: Error | undefined, req: any, result: any) => {
-            if (error) {
-              console.log(error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-        });
-
-        // Get the ticket comments
-        const commentsResult = await new Promise((resolve, reject) => {
-          client.tickets.getComments(parseInt(ticket_id, 10), (error: Error | undefined, req: any, result: any) => {
-            if (error) {
-              console.log(error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-        });
-
-        // Combine the results
-        const detailedResult = {
-          ticket: ticketResult,
-          comments: commentsResult
-        };
+        const result = await getTicketDetails(client, parseInt(ticket_id, 10));
 
         return {
           content: [{
             type: "text",
-            text: JSON.stringify(detailedResult, null, 2)
+            text: JSON.stringify(result, null, 2)
           }]
         };
       } catch (error: any) {
@@ -351,16 +379,7 @@ export function zenDeskTools(server: McpServer) {
     },
     async ({ ticket_id }) => {
       try {
-        const result = await new Promise((resolve, reject) => {
-          (client as any).tickets.listIncidents(parseInt(ticket_id, 10), (error: Error | undefined, req: any, result: any) => {
-            if (error) {
-              console.log(error);
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          });
-        });
+        const result = await getLinkedIncidents(client, parseInt(ticket_id, 10));
 
         return {
           content: [{

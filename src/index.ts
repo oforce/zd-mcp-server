@@ -2,11 +2,11 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { zenDeskTools, createZendeskClient, searchTickets, getTicket, getTicketDetails, getLinkedIncidents } from "./tools/index.js";
+import { zenDeskTools, createZendeskClient, searchTickets, getTicket, getTicketDetails, getLinkedIncidents, searchArticles, getArticle, listArticles } from "./tools/index.js";
 import { Command } from "commander";
 
 // Re-export the functions for library usage
-export { createZendeskClient, searchTickets, getTicket, getTicketDetails, getLinkedIncidents } from "./tools/index.js";
+export { createZendeskClient, searchTickets, getTicket, getTicketDetails, getLinkedIncidents, searchArticles, getArticle, listArticles } from "./tools/index.js";
 export type { ZendeskConfig } from "./tools/index.js";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
@@ -24,7 +24,7 @@ async function main() {
   
   program
     .name('zd-mcp-server')
-    .description('Zendesk MCP Server - Model Context Protocol server for Zendesk Support integration')
+    .description('Zendesk MCP Server - Model Context Protocol server for Zendesk Support and Help Center integration')
     .version(VERSION)
     .option(
       '--enabled-tools <pattern>',

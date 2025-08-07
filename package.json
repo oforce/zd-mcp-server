@@ -1,7 +1,7 @@
 {
   "name": "zd-mcp-server",
   "version": "0.5.0",
-  "description": "Zendesk MCP Server - Model Context Protocol server for Zendesk Support integration",
+  "description": "Zendesk MCP Server - Model Context Protocol server for Zendesk Support and Help Center integration",
   "main": "dist/index.js",
   "bin": {
     "zd-mcp-server": "dist/index.js"
@@ -14,7 +14,10 @@
     "ai",
     "claude",
     "support",
-    "tickets"
+    "tickets",
+    "help-center",
+    "knowledge-base",
+    "articles"
   ],
   "author": "Girish Koundinya",
   "license": "MIT",

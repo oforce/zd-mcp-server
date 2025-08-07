@@ -122,7 +122,7 @@ For other MCP-compatible clients (Cline, Windsurf, etc.), refer to their documen
 |------|-------------|---------------|
 | `zendesk_get_ticket` | Retrieve a ticket by ID | "Get ticket #12345" |
 | `zendesk_get_ticket_details` | Get detailed ticket with comments | "Show me full details for ticket #67890" |
-| `zendesk_search` | Search tickets with query syntax | "Find all urgent tickets from last week" |
+| `zendesk_search` | Search tickets and resources with advanced filtering, sorting, and pagination | "Find all urgent tickets from last week, sorted by created date" |
 | `zendesk_create_ticket` | Create a new ticket | "Create a high priority ticket for login issues" |
 | `zendesk_update_ticket` | Update ticket properties | "Set ticket #555 to solved status" |
 | `zendesk_add_private_note` | Add internal agent notes | "Add a private note about investigation progress" |
@@ -145,6 +145,9 @@ Once configured, you can use natural language with your AI assistant:
 "Find all solved tickets from this week tagged with 'billing'"
 "Search for open tickets containing 'password reset'"
 "Show me tickets created by john@company.com in the last 30 days"
+"Search for urgent tickets, show 25 per page, sorted by creation date descending"
+"Find all users in the organization, paginate to page 3"
+"Search for tickets with status open, sorted by priority ascending"
 ```
 
 ### Customer Communication
@@ -284,8 +287,33 @@ tags:billing tags:technical-issue
 # Requester searches
 requester:customer@company.com
 
+# Resource type filtering
+type:ticket type:user type:organization type:group
+
 # Complex combinations
 status:open priority:high created>2024-01-01 tags:billing
+```
+
+### Enhanced Search Parameters
+
+The search tool now supports advanced filtering and pagination options:
+
+```bash
+# Pagination
+per_page: 1-100 results per page (default: 100)
+page: Page number for pagination (starts from 1)
+
+# Sorting
+sort_by: Field to sort by (created_at, updated_at, priority, status, ticket_type, etc.)
+sort_order: asc (ascending) or desc (descending)
+
+# Resource type filtering
+type: ticket, user, organization, or group
+
+# Example usage
+"Search for open tickets, 25 per page, page 2, sorted by priority descending"
+"Find all users, sorted by creation date, show first 50 results"
+"Search urgent tickets from last month, sorted by update date"
 ```
 
 ### Batch Operations

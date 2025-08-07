@@ -28,6 +28,7 @@
   "homepage": "https://github.com/koundinya/zd-mcp-server#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "commander": "^14.0.0",
     "node-zendesk": "^2.1.0",
     "zod": "^3.24.2"
   },

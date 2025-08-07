@@ -29,6 +29,24 @@ npm install -g zd-mcp-server
 npx zd-mcp-server
 ```
 
+### Tool Filtering
+
+You can filter which tools are available using the `--enabled-tools` flag with a regex pattern:
+
+```bash
+# Enable only search-related tools
+zd-mcp-server --enabled-tools="search"
+
+# Enable ticket and search tools
+zd-mcp-server --enabled-tools="ticket|search"  
+
+# Enable only read operations (get/search tools)
+zd-mcp-server --enabled-tools="get|search"
+
+# See all available options
+zd-mcp-server --help
+```
+
 ### Option 3: Development Setup
 
 ```bash
@@ -66,6 +84,24 @@ Add to your Claude Desktop configuration file:
     "zendesk": {
       "command": "npx",
       "args": ["-y", "zd-mcp-server"],
+      "env": {
+        "ZENDESK_EMAIL": "your-email@company.com",
+        "ZENDESK_TOKEN": "your-zendesk-api-token",
+        "ZENDESK_SUBDOMAIN": "your-company"
+      }
+    }
+  }
+}
+```
+
+**With Tool Filtering:**
+
+```json
+{
+  "mcpServers": {
+    "zendesk": {
+      "command": "npx",
+      "args": ["-y", "zd-mcp-server", "--enabled-tools", "search|get"],
       "env": {
         "ZENDESK_EMAIL": "your-email@company.com",
         "ZENDESK_TOKEN": "your-zendesk-api-token",

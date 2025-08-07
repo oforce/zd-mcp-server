@@ -96,20 +96,32 @@ export async function getLinkedIncidents(client: any, ticketId: number): Promise
 }
 
 // Environment-based client for backward compatibility
+function createClient() {
+  if (!process.env.ZENDESK_EMAIL || !process.env.ZENDESK_TOKEN || !process.env.ZENDESK_SUBDOMAIN) {
+    throw new Error('Missing required environment variables: ZENDESK_EMAIL, ZENDESK_TOKEN, ZENDESK_SUBDOMAIN');
+  }
 
-if (!process.env.ZENDESK_EMAIL || !process.env.ZENDESK_TOKEN || !process.env.ZENDESK_SUBDOMAIN) {
-  throw new Error('Missing required environment variables: ZENDESK_EMAIL, ZENDESK_TOKEN, ZENDESK_SUBDOMAIN');
+  return zendesk.createClient({
+    username: process.env.ZENDESK_EMAIL as string,
+    token: process.env.ZENDESK_TOKEN as string,
+    remoteUri: `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`,
+  });
 }
 
-const client = zendesk.createClient({
-  username: process.env.ZENDESK_EMAIL as string,
-  token: process.env.ZENDESK_TOKEN as string,
-  remoteUri: `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`,
-});
-
-export function zenDeskTools(server: McpServer) {
-  server.tool(
-    "zendesk_get_ticket",
+export function zenDeskTools(server: McpServer, enabledToolsRegex?: RegExp) {
+  const client = createClient();
+  
+  const shouldRegisterTool = (toolName: string): boolean => {
+    if (!enabledToolsRegex) return true;
+    const shouldRegister = enabledToolsRegex.test(toolName);
+    if (!shouldRegister) {
+      console.error(`Skipping tool ${toolName} - doesn't match filter pattern`);
+    }
+    return shouldRegister;
+  };
+  if (shouldRegisterTool("zendesk_get_ticket")) {
+    server.tool(
+      "zendesk_get_ticket",
     "Get a Zendesk ticket by ID",
     {
       ticket_id: z.string().describe("The ID of the ticket to retrieve"),
@@ -134,10 +146,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_update_ticket",
+  if (shouldRegisterTool("zendesk_update_ticket")) {
+    server.tool(
+      "zendesk_update_ticket",
     "Update a Zendesk ticket's properties",
     {
       ticket_id: z.string().describe("The ID of the ticket to update"),
@@ -189,10 +203,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_create_ticket",
+  if (shouldRegisterTool("zendesk_create_ticket")) {
+    server.tool(
+      "zendesk_create_ticket",
     "Create a new Zendesk ticket",
     {
       subject: z.string().describe("The subject of the ticket"),
@@ -243,10 +259,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_add_private_note",
+  if (shouldRegisterTool("zendesk_add_private_note")) {
+    server.tool(
+      "zendesk_add_private_note",
     "Add a private internal note to a Zendesk ticket",
     {
       ticket_id: z.string().describe("The ID of the ticket to add a note to"),
@@ -288,10 +306,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_add_public_note",
+  if (shouldRegisterTool("zendesk_add_public_note")) {
+    server.tool(
+      "zendesk_add_public_note",
     "Add a public comment to a Zendesk ticket",
     {
       ticket_id: z.string().describe("The ID of the ticket to add a comment to"),
@@ -333,10 +353,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_search",
+  if (shouldRegisterTool("zendesk_search")) {
+    server.tool(
+      "zendesk_search",
     "Search for Zendesk tickets and other resources with advanced filtering and pagination",
     {
       query: z.string().describe("Search query supporting Zendesk syntax: Field searches (status:open, priority:urgent, type:ticket, tags:billing, assignee_id:123, requester:email@domain.com), comparison operators (created>2024-01-01, updated<2024-12-31), text searches with quotes for exact phrases (\"login issue\"), wildcards (login*), negation (-status:solved), and combinations (status:open priority:high created>2024-01-01). Examples: 'status:open', 'priority:urgent tags:billing', 'type:ticket \"password reset\"', '-status:solved created>2024-01-01'"),
@@ -374,10 +396,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_get_ticket_details",
+  if (shouldRegisterTool("zendesk_get_ticket_details")) {
+    server.tool(
+      "zendesk_get_ticket_details",
     "Get detailed information about a Zendesk ticket including comments",
     {
       ticket_id: z.string().describe("The ID of the ticket to retrieve details for"),
@@ -402,10 +426,12 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 
-  server.tool(
-    "zendesk_get_linked_incidents",
+  if (shouldRegisterTool("zendesk_get_linked_incidents")) {
+    server.tool(
+      "zendesk_get_linked_incidents",
     "Fetch all incident tickets linked to a particular ticket",
     {
       ticket_id: z.string().describe("The ID of the ticket to retrieve linked incidents for"),
@@ -430,5 +456,6 @@ export function zenDeskTools(server: McpServer) {
         };
       }
     }
-  );
+    );
+  }
 }

@@ -156,6 +156,8 @@ For other MCP-compatible clients (Cline, Windsurf, etc.), refer to their documen
 
 | Tool | Description | Example Usage |
 |------|-------------|---------------|
+| `zendesk_oauth_login` | Login using OAuth device flow | "Login to Zendesk" |
+| `zendesk_oauth_logout` | Logout from OAuth session | "Logout from Zendesk" |
 | `zendesk_get_ticket` | Retrieve a ticket by ID | "Get ticket #12345" |
 | `zendesk_get_ticket_details` | Get detailed ticket with comments | "Show me full details for ticket #67890" |
 | `zendesk_search` | Search tickets and resources with advanced filtering, sorting, and pagination | "Find all urgent tickets from last week, sorted by created date" |
@@ -168,6 +170,12 @@ For other MCP-compatible clients (Cline, Windsurf, etc.), refer to their documen
 ## 💬 Usage Examples
 
 Once configured, you can use natural language with your AI assistant:
+
+### OAuth Authentication
+```
+"Login to Zendesk"
+"Logout from Zendesk"
+```
 
 ### Ticket Management
 ```
@@ -201,21 +209,51 @@ Once configured, you can use natural language with your AI assistant:
 
 ## 🔑 Authentication Setup
 
-### 1. Generate API Token
+The server supports two authentication methods:
 
-1. Log in to your Zendesk account
-2. Go to **Admin Center** → **Apps and integrations** → **APIs** → **Zendesk API**
-3. Click **Add API token**
-4. Add description: "MCP Server Integration"
-5. Click **Create** and copy the token
-6. **Important**: Save this token securely - you won't see it again
+### Option 1: OAuth Flow (Recommended)
 
-### 2. Find Your Subdomain
+1. **Create OAuth App in Zendesk:**
+   - Go to **Admin Center** → **Apps and integrations** → **APIs** → **OAuth Clients**
+   - Click **Add OAuth client**
+   - Set **Client Name**: "MCP Server Integration"
+   - Set **Redirect URLs**: `urn:ietf:wg:oauth:2.0:oob` (for device flow)
+   - Copy the **Client ID** and **Client Secret**
+
+2. **Configure Environment Variables:**
+   ```bash
+   export ZENDESK_CLIENT_ID="your-oauth-client-id"
+   export ZENDESK_CLIENT_SECRET="your-oauth-client-secret"
+   export ZENDESK_SUBDOMAIN="your-company"
+   ```
+
+3. **Login Process:**
+   - Use the `zendesk_oauth_login` tool to initiate device flow
+   - Follow the provided URL and enter the code
+   - Once authenticated, all API calls will use OAuth tokens
+
+### Option 2: API Token (Legacy)
+
+1. **Generate API Token:**
+   - Log in to your Zendesk account
+   - Go to **Admin Center** → **Apps and integrations** → **APIs** → **Zendesk API**
+   - Click **Add API token**
+   - Add description: "MCP Server Integration"
+   - Click **Create** and copy the token
+
+2. **Configure Environment Variables:**
+   ```bash
+   export ZENDESK_EMAIL="your-email@company.com"
+   export ZENDESK_TOKEN="your-zendesk-api-token"
+   export ZENDESK_SUBDOMAIN="your-company"
+   ```
+
+### Subdomain Setup
 
 Your Zendesk URL format: `https://YOUR-SUBDOMAIN.zendesk.com`
 Use `YOUR-SUBDOMAIN` as the `ZENDESK_SUBDOMAIN` value.
 
-### 3. Required Permissions
+### Required Permissions
 
 Ensure your Zendesk user account has:
 - **Agent** role (minimum)

@@ -47,6 +47,31 @@ zd-mcp-server --enabled-tools="get|search"
 zd-mcp-server --help
 ```
 
+### HTTP Transport
+
+The server supports both stdio (default) and HTTP transports:
+
+```bash
+# Run over stdio (default)
+zd-mcp-server
+
+# Run over HTTP on port 3000
+zd-mcp-server --http
+
+# Run over HTTP on custom port
+zd-mcp-server --http 8080
+
+# Combine with tool filtering
+zd-mcp-server --http 3000 --enabled-tools="search|get"
+```
+
+When running in HTTP mode, the server provides:
+- **MCP endpoint**: `http://localhost:3000/mcp`
+- **OAuth discovery**: `http://localhost:3000/.well-known/oauth-authorization-server`
+- **Client registration**: `http://localhost:3000/register`
+- **Authorization**: `http://localhost:3000/authorize`
+- **Token exchange**: `http://localhost:3000/token`
+
 ### Option 3: Development Setup
 
 ```bash

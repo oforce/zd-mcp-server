@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { zenDeskTools, createZendeskClient, searchTickets, getTicket, getTicketDetails, getLinkedIncidents, searchArticles, getArticle, listArticles } from "./tools/index.js";
+import { ZendeskMcpServer } from "./server.js";
+import { createZendeskClient, searchTickets, getTicket, getTicketDetails, getLinkedIncidents, searchArticles, getArticle, listArticles } from "./tools/index.js";
 import { Command } from "commander";
 
 // Re-export the functions for library usage
@@ -30,37 +29,23 @@ async function main() {
       '--enabled-tools <pattern>',
       'Filter tools using regex pattern (e.g., "search|ticket" to enable search and ticket tools)'
     )
+    .option(
+      '--http [port]',
+      'Run server over HTTP instead of stdio (default port: 3000)'
+    )
     .parse();
 
   const options = program.opts();
   
-  let enabledToolsRegex: RegExp | undefined;
-  if (options.enabledTools) {
-    try {
-      enabledToolsRegex = new RegExp(options.enabledTools, 'i');
-      console.error(`Tool filtering enabled with pattern: ${options.enabledTools}`);
-    } catch (error) {
-      console.error(`Invalid tool filter regex pattern: ${options.enabledTools}. Ignoring filter.`);
-    }
-  }
+  const serverOptions = {
+    http: options.http,
+    enabledTools: options.enabledTools,
+    version: VERSION,
+  };
 
-  const server = new McpServer(
-    {
-      name: "zendesk-mcp",
-      version: VERSION,
-    },
-    {
-      capabilities: {
-        logging: {},
-      },
-    }
-  );
-
-  zenDeskTools(server, enabledToolsRegex);
-
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error(`Zendesk MCP Server v${VERSION} running on stdio`);
+  const server = new ZendeskMcpServer(serverOptions);
+  await server.initialize();
+  await server.start();
 }
 
 main().catch((error) => {

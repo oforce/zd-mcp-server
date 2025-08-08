@@ -53,18 +53,32 @@ function createClient() {
         remoteUri: `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`,
         oauth: true,
       });
+    } else {
+      // Return a dummy client for HTTP mode - tools will handle auth via bearer tokens
+      return zendesk.createClient({
+        username: 'oauth',
+        token: 'placeholder',
+        remoteUri: `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`,
+        oauth: true,
+      });
     }
   }
 
   // Fall back to API token authentication
-  if (!process.env.ZENDESK_EMAIL || !process.env.ZENDESK_TOKEN || !process.env.ZENDESK_SUBDOMAIN) {
-    throw new Error('Missing required environment variables. Either provide ZENDESK_EMAIL, ZENDESK_TOKEN, ZENDESK_SUBDOMAIN for API token auth, or ZENDESK_CLIENT_ID, ZENDESK_CLIENT_SECRET, ZENDESK_SUBDOMAIN for OAuth');
+  if (process.env.ZENDESK_EMAIL && process.env.ZENDESK_TOKEN && process.env.ZENDESK_SUBDOMAIN) {
+    return zendesk.createClient({
+      username: process.env.ZENDESK_EMAIL as string,
+      token: process.env.ZENDESK_TOKEN as string,
+      remoteUri: `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`,
+    });
   }
 
+  // If no credentials are available, return a dummy client
+  // In HTTP mode, the actual authentication will be handled via bearer tokens
   return zendesk.createClient({
-    username: process.env.ZENDESK_EMAIL as string,
-    token: process.env.ZENDESK_TOKEN as string,
-    remoteUri: `https://${process.env.ZENDESK_SUBDOMAIN}.zendesk.com/api/v2`,
+    username: 'placeholder',
+    token: 'placeholder',
+    remoteUri: 'https://placeholder.zendesk.com/api/v2',
   });
 }
 
